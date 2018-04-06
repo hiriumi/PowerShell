@@ -6,7 +6,7 @@ $RetentionDays = 120
 
 $BackupRootDir = "F:\test_backup"
 $BackupTargetDir = Join-Path -Path $BackupRootDir -ChildPath $DateTimeNow.ToString("yyyy-MM-dd-HH-mm-ss")
-$SourceDirs = "C:\Users\hiriu\Dropbox\カメラアップロード","C:\Users\hiriu\Dropbox\補習校関係"
+$SourceDirs = "C:\test1","C:\test2"
 
 Write-Host "Backing up to $BackupTargetDir..."
 
