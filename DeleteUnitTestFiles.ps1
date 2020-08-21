@@ -1,11 +1,11 @@
 $rootDir = "C:\UnitTestResults"
-$dirs = dir -Path $rootDir | where {$_.PSIsContainer}
+$dirs = Get-ChildItem -Path $rootDir | Where-Object {$_.PSIsContainer}
 
 $count = 0
 foreach($dir in $dirs)
 {
     Write-Host "Directory " $dir.FullName " found"
-    $itemsToDelete = dir -Path $dir.FullName
+    $itemsToDelete = Get-ChildItem -Path $dir.FullName
     foreach($item in $itemsToDelete)
     {
         if ($item.PSIsContainer)

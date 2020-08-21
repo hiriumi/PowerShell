@@ -1,6 +1,6 @@
 ﻿Import-Module WebAdministration
-pushd
-cd IIS:
-cd 'Sites\Default Web Site'
-dir | where {$_.NodeType –eq “application”} | foreach {Remove-WebApplication $_.Name}
-popd
+Push-Location
+Set-Location IIS:
+Set-Location 'Sites\Default Web Site'
+Get-ChildItem | Where-Object {$_.NodeType –eq “application”} | ForEach-Object {Remove-WebApplication $_.Name}
+Pop-Location
