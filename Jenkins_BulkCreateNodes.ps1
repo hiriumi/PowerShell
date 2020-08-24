@@ -2,7 +2,38 @@
     .SYNOPSIS
        Generates Jenkins nodes.
     .DESCRIPTION
-       This script bulk generates Jenkins nodes on the master so that nodes will be ready for Jenkins slaves to talk to them. 
+        This script bulk generates Jenkins nodes on the master so that nodes will be ready for Jenkins slaves to talk to them. 
+        It utilizes Jenkins CLI, so Java (https://java.com/en/download/) and downloaded jenkins-cli.jar file from Jenkins master is required.
+    .PARAMETER JenkinsServerUrl
+        Required. Base URL of the Jenkins master. e.g. https://myjenkins.com/
+    .PARAMETER Username
+        The username to use for this process.
+    .PARAMETER ApiToken
+        Generated API Token of the username.
+    .PARAMETER NodeCount
+        Specifies how many nodes to created.
+    .PARAMETER NodeNamePattern
+        Specify the pattern of node name here. If 20 nodes to be created and "foobar-###" is passed, foobar-001 to foobar-020 would be generated.
+    .PARAMETER Description
+        Optional. Specify the description of each node. Use this field to specify what kind of fleet you are creating.
+    .PARAMETER RemoteRootDir
+        Optional. Defaults to "C:\slave". Specify any directory where you expect slave bits to reside on each node.
+    .PARAMETER Mode
+        Optional. Defaults to NORMAL.
+    .PARAMETER NumExecutors
+        Optional. Defaults to 1.
+    .PARAMETER Labels
+        Optional. e.g. "WINDOWS 2019". Separate labels by space.
+    .PARAMETER JenkinsCliJarFilePath
+        Optional. When you download jenkins-cli.jar, the file is usually at ~/Download/jenkins-cli.jar. Downaload the file from https://your-jenkins-server/jnlpJars/jenkins-cli.jar
+        There is a download link on https://your-jenkins-server/cli
+    .PARAMETER OverwriteNodeIfExists
+        Optional. If the node to be created already exists on the Jenkins master, it deletes it and recreates it if $True is passed. If $False, it is skipped.
+    .PARAMETER KeepNodeXmlFiles
+        Optional. Defaults to $False. If $True is passed, the XML files created for the nodes will be kept in the same directory as this script. This option could be used to reuse the XML files in different environments.
+    
+    
+    
 #>
 [CmdletBinding()]
 param 
@@ -32,9 +63,7 @@ param
     [Parameter(Mandatory=$False)]
     [bool]$OverwriteNodeIfExists = $False,
     [Parameter(Mandatory=$False)]
-    [bool]$KeepNodeXmlFiles = $False,
-    [Parameter(Mandatory=$False)]
-    [string]$JsonDataPath = "$env:TMP"
+    [bool]$KeepNodeXmlFiles = $False
 )
 
 $digitCount = ($NodeNamePattern.ToCharArray() | Where-Object {$_ -eq '#'} | Measure-Object).Count
@@ -94,7 +123,7 @@ ForEach ($index In 1..$NodeCount)
     }
 
     # Write out the node XML to file to be used for standard input below.
-    Set-Content -Path "$nodeName.xml" -Value $sw.ToString()
+    Set-Content -Path "$nodeName.xml" -Value $sw.ToString() -Force
 
     # Check the existence of the node.
 
@@ -109,17 +138,13 @@ ForEach ($index In 1..$NodeCount)
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $processInfo
     $process.Start() | Out-Null
-    $si = $process.StandardInput
-    $si.WriteLine($sw.ToString())
-    $si.Close()
     $process.WaitForExit()
     $stdo = $process.StandardOutput
-    # $stde = $process.StandardError
 
     If ($process.ExitCode -ne 0)
     {
-        Write-Host $stdo
         Start-Process -FilePath java -NoNewWindow -Wait -ArgumentList "-jar $JenkinsCliJarFilePath","-s $JenkinsServerUrl","-auth $Username`:$ApiToken","create-node" -RedirectStandardInput "$nodeName.xml"
+        Write-Host "$nodeName created ($(Get-Date))"
     }
     else 
     {
