@@ -32,6 +32,8 @@ param
     [Parameter(Mandatory=$False)]
     [bool]$OverwriteNodeIfExists = $False,
     [Parameter(Mandatory=$False)]
+    [bool]$KeepNodeXmlFiles = $False,
+    [Parameter(Mandatory=$False)]
     [string]$JsonDataPath = "$env:TMP"
 )
 
@@ -132,6 +134,11 @@ ForEach ($index In 1..$NodeCount)
         else 
         {
             Write-Host "Node $nodeName exists."   
+        }
+
+        If (!$KeepNodeXmlFiles)
+        {
+            Remove-Item -Path "$nodeName.xml" -Force
         }
     }
 }
