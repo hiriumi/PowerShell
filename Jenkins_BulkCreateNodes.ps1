@@ -114,7 +114,7 @@ ForEach ($index In 1..$NodeCount)
     $si.Close()
     $process.WaitForExit()
     $stdo = $process.StandardOutput
-    $stde = $process.StandardError
+    # $stde = $process.StandardError
 
     If ($process.ExitCode -ne 0)
     {
